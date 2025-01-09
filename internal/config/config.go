@@ -19,7 +19,6 @@ func getCfgFilepath() (string, error) {
 	}
 
 	filepath := home + "/" + cfg_filename
-	println(filepath)
 	return filepath, nil
 }
 
