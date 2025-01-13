@@ -69,3 +69,19 @@ func HandlerReset(s *State, cmd Command) error {
 	err := s.Db.DeleteAllUsers(context.Background())
 	return err
 }
+
+func HandlerUsers(s *State, cmd Command) error {
+	users, err := s.Db.GetUsers(context.Background())
+	if err == sql.ErrNoRows {
+		return fmt.Errorf("error: no users found")
+	}
+
+	for _, u := range users {
+		if s.Cfg.CurrentUser == u.Name.String {
+			fmt.Println("\t*", u.Name.String, "(current)")
+			continue
+		}
+		fmt.Println("\t*", u.Name.String)
+	}
+	return nil
+}
