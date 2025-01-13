@@ -38,6 +38,7 @@ func main() {
 	c.Register("register", commands.HandlerRegister)
 	c.Register("reset", commands.HandlerReset)
 	c.Register("users", commands.HandlerUsers)
+	c.Register("agg", commands.HandlerAgg)
 
 	if len(os.Args) < 2 {
 		fmt.Println("error: no command provided")

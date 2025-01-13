@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/znataniel/gator/internal/database"
+	"github.com/znataniel/gator/internal/rss"
 )
 
 func HandlerLogin(s *State, cmd Command) error {
@@ -83,5 +84,15 @@ func HandlerUsers(s *State, cmd Command) error {
 		}
 		fmt.Println("\t*", u.Name.String)
 	}
+	return nil
+}
+
+func HandlerAgg(s *State, cmd Command) error {
+	feed, err := rss.FetchFeed(context.Background(), "url here")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(feed)
 	return nil
 }
