@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/znataniel/gator/internal/commands"
 	"github.com/znataniel/gator/internal/config"
+	"github.com/znataniel/gator/internal/database"
 )
 
 func printConfig(cfg config.Config) {
@@ -24,10 +27,15 @@ func main() {
 		Cfg: &configs,
 	}
 
+	db, err := sql.Open("postgres", state.Cfg.DbUrl)
+	dbQueries := database.New(db)
+	state.Db = dbQueries
+
 	c := commands.Commands{
 		Comms: make(map[string]func(*commands.State, commands.Command) error),
 	}
 	c.Register("login", commands.HandlerLogin)
+	c.Register("register", commands.HandlerRegister)
 
 	if len(os.Args) < 2 {
 		fmt.Println("error: no command provided")
