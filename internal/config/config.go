@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 )
 
@@ -43,10 +42,6 @@ func Read() (Config, error) {
 }
 
 func (c *Config) SetUser(user string) error {
-	if c.CurrentUser == user {
-		return fmt.Errorf("error: user already logged in")
-	}
-
 	c.CurrentUser = user
 
 	filepath, err := getCfgFilepath()

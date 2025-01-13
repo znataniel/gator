@@ -64,3 +64,8 @@ func HandlerRegister(s *State, cmd Command) error {
 	fmt.Println("name:", cmd.Args[0])
 	return nil
 }
+
+func HandlerReset(s *State, cmd Command) error {
+	err := s.Db.DeleteAllUsers(context.Background())
+	return err
+}
