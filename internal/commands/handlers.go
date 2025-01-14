@@ -96,3 +96,35 @@ func HandlerAgg(s *State, cmd Command) error {
 	fmt.Println(feed)
 	return nil
 }
+
+func HandlerAddFeed(s *State, cmd Command) error {
+	if len(cmd.Args) != 2 {
+		return fmt.Errorf("error: wrong number of arguments provided")
+	}
+
+	ctx := context.Background()
+
+	currentUserRow, err := s.Db.GetUserByName(ctx, sql.NullString{
+		String: s.Cfg.CurrentUser,
+		Valid:  true,
+	})
+	if err != nil {
+		return fmt.Errorf("error: could not retrieve current user data")
+	}
+
+	feed, err := s.Db.CreateFeed(ctx, database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.Args[0],
+		Url:       cmd.Args[1],
+		UserID:    currentUserRow.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("error: could not create feed")
+	}
+
+	fmt.Println("New feed created!")
+	fmt.Println(feed)
+	return nil
+}
