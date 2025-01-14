@@ -128,3 +128,17 @@ func HandlerAddFeed(s *State, cmd Command) error {
 	fmt.Println(feed)
 	return nil
 }
+
+func HandlerFeeds(s *State, cmd Command) error {
+	feedData, err := s.Db.GetFeedsToPrint(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, f := range feedData {
+		fmt.Println("*", f.Name)
+		fmt.Println("\turl:", f.Url)
+		fmt.Println("\tadded by:", f.Name_2.String)
+	}
+	return nil
+}
