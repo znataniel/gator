@@ -73,8 +73,8 @@ func HandlerReset(s *State, cmd Command) error {
 
 func HandlerUsers(s *State, cmd Command) error {
 	users, err := s.Db.GetUsers(context.Background())
-	if err == sql.ErrNoRows {
-		return fmt.Errorf("error: no users found")
+	if err != nil {
+		return fmt.Errorf("user could not be retrieved: %s", err)
 	}
 
 	for _, u := range users {
@@ -140,5 +140,9 @@ func HandlerFeeds(s *State, cmd Command) error {
 		fmt.Println("\turl:", f.Url)
 		fmt.Println("\tadded by:", f.Name_2.String)
 	}
+	return nil
+}
+
+func HandlerFollow(s *State, cmd Command) error {
 	return nil
 }
