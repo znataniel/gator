@@ -144,5 +144,33 @@ func HandlerFeeds(s *State, cmd Command) error {
 }
 
 func HandlerFollow(s *State, cmd Command) error {
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("error: wrong number of arguments provided")
+	}
+
+	currentUser, err := s.Db.GetUserByName(context.Background(), sql.NullString{
+		String: s.Cfg.CurrentUser,
+		Valid:  true,
+	})
+	if err != nil {
+		return fmt.Errorf("could not retrieve current user data: %s", err)
+	}
+
+	feedData, err := s.Db.GetFeedByURL(context.Background(), cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("could not retrieve provided rss feed data: %s", err)
+	}
+
+	feedFollow, err := s.Db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		UserID: currentUser.ID,
+		FeedID: feedData.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("could not follow feed: %s", err)
+	}
+
+	fmt.Println("the feed:", feedFollow.FeedName)
+	fmt.Println("has been followed by current user:", feedFollow.UserName.String)
+	fmt.Println()
 	return nil
 }
