@@ -174,3 +174,25 @@ func HandlerFollow(s *State, cmd Command) error {
 	fmt.Println()
 	return nil
 }
+
+func HandlerFollowing(s *State, cmd Command) error {
+	currentUser, err := s.Db.GetUserByName(context.Background(), sql.NullString{
+		String: s.Cfg.CurrentUser,
+		Valid:  true,
+	})
+	if err != nil {
+		return fmt.Errorf("could not retrieve current user data: %s", err)
+	}
+
+	feeds, err := s.Db.GetFeedFollowsForUser(context.Background(), currentUser.ID)
+	if err != nil {
+		return fmt.Errorf("could not retrieve current user's followed feeds: %s", err)
+	}
+
+	fmt.Println("followed feeds")
+	for _, f := range feeds {
+		fmt.Println("\t*", f.FeedName, "added by", f.UserName.String)
+	}
+
+	return nil
+}
