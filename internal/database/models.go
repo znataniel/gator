@@ -21,7 +21,7 @@ type Feed struct {
 }
 
 type FeedFollow struct {
-	ID        int32
+	ID        int64
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	UserID    uuid.NullUUID

@@ -1,8 +1,8 @@
 -- +goose Up
 CREATE TABLE feed_follows (
-	id INT PRIMARY KEY,
-	created_at TIMESTAMP NOT NULL,
-	updated_at TIMESTAMP NOT NULL,
+	id BIGSERIAL PRIMARY KEY,
+	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+	updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 	user_id UUID,
 	feed_id UUID,
 	FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
