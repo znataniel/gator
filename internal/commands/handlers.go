@@ -97,20 +97,12 @@ func HandlerAgg(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerAddFeed(s *State, cmd Command) error {
+func HandlerAddFeed(s *State, cmd Command, currentUser database.User) error {
 	if len(cmd.Args) != 2 {
 		return fmt.Errorf("error: wrong number of arguments provided")
 	}
 
 	ctx := context.Background()
-
-	currentUserRow, err := s.Db.GetUserByName(ctx, sql.NullString{
-		String: s.Cfg.CurrentUser,
-		Valid:  true,
-	})
-	if err != nil {
-		return fmt.Errorf("error: could not retrieve current user data")
-	}
 
 	feed, err := s.Db.CreateFeed(ctx, database.CreateFeedParams{
 		ID:        uuid.New(),
@@ -118,7 +110,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		UpdatedAt: time.Now(),
 		Name:      cmd.Args[0],
 		Url:       cmd.Args[1],
-		UserID:    currentUserRow.ID,
+		UserID:    currentUser.ID,
 	})
 	if err != nil {
 		return fmt.Errorf("error: could not create feed")
@@ -126,14 +118,6 @@ func HandlerAddFeed(s *State, cmd Command) error {
 
 	fmt.Println("New feed created!")
 	fmt.Println(feed)
-
-	currentUser, err := s.Db.GetUserByName(context.Background(), sql.NullString{
-		String: s.Cfg.CurrentUser,
-		Valid:  true,
-	})
-	if err != nil {
-		return fmt.Errorf("could not retrieve current user data: %s", err)
-	}
 
 	_, err = s.Db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		UserID: currentUser.ID,
@@ -160,17 +144,9 @@ func HandlerFeeds(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerFollow(s *State, cmd Command) error {
+func HandlerFollow(s *State, cmd Command, currentUser database.User) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("error: wrong number of arguments provided")
-	}
-
-	currentUser, err := s.Db.GetUserByName(context.Background(), sql.NullString{
-		String: s.Cfg.CurrentUser,
-		Valid:  true,
-	})
-	if err != nil {
-		return fmt.Errorf("could not retrieve current user data: %s", err)
 	}
 
 	feedData, err := s.Db.GetFeedByURL(context.Background(), cmd.Args[0])
@@ -192,15 +168,7 @@ func HandlerFollow(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerFollowing(s *State, cmd Command) error {
-	currentUser, err := s.Db.GetUserByName(context.Background(), sql.NullString{
-		String: s.Cfg.CurrentUser,
-		Valid:  true,
-	})
-	if err != nil {
-		return fmt.Errorf("could not retrieve current user data: %s", err)
-	}
-
+func HandlerFollowing(s *State, cmd Command, currentUser database.User) error {
 	feeds, err := s.Db.GetFeedFollowsForUser(context.Background(), currentUser.ID)
 	if err != nil {
 		return fmt.Errorf("could not retrieve current user's followed feeds: %s", err)
