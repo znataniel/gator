@@ -126,6 +126,23 @@ func HandlerAddFeed(s *State, cmd Command) error {
 
 	fmt.Println("New feed created!")
 	fmt.Println(feed)
+
+	currentUser, err := s.Db.GetUserByName(context.Background(), sql.NullString{
+		String: s.Cfg.CurrentUser,
+		Valid:  true,
+	})
+	if err != nil {
+		return fmt.Errorf("could not retrieve current user data: %s", err)
+	}
+
+	_, err = s.Db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		UserID: currentUser.ID,
+		FeedID: feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("could not follow feed: %s", err)
+	}
+
 	return nil
 }
 
