@@ -181,3 +181,25 @@ func HandlerFollowing(s *State, cmd Command, currentUser database.User) error {
 
 	return nil
 }
+
+func HandlerUnfollow(s *State, cmd Command, currentUser database.User) error {
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("error: wrong number of arguments provided")
+	}
+
+	feedData, err := s.Db.GetFeedByURL(context.Background(), cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("could not retrieve provided rss feed data: %s", err)
+	}
+
+	err = s.Db.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{
+		UserID: currentUser.ID,
+		FeedID: feedData.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("could not delete follow record: %s", err)
+	}
+
+	fmt.Println("you have unfollowed", feedData.Name)
+	return nil
+}

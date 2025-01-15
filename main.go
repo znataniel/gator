@@ -43,6 +43,7 @@ func main() {
 	c.Register("feeds", commands.HandlerFeeds)
 	c.Register("follow", commands.MiddlewareLoggedIn(commands.HandlerFollow))
 	c.Register("following", commands.MiddlewareLoggedIn(commands.HandlerFollowing))
+	c.Register("unfollow", commands.MiddlewareLoggedIn(commands.HandlerUnfollow))
 
 	if len(os.Args) < 2 {
 		fmt.Println("error: no command provided")
