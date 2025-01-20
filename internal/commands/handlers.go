@@ -87,14 +87,60 @@ func HandlerUsers(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerAgg(s *State, cmd Command) error {
-	feed, err := rss.FetchFeed(context.Background(), "url here")
+func scrapeFeeds(s *State) error {
+	ctx := context.Background()
+
+	nextFeed, err := s.Db.GetNextFeedToFetch(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not retrieve next feed to fetch: %s", err)
 	}
 
-	fmt.Println(feed)
+	err = s.Db.MarkFeedFetched(ctx, database.MarkFeedFetchedParams{
+		LastFetchedAt: sql.NullTime{
+			Time:  time.Now(),
+			Valid: true,
+		},
+		ID: nextFeed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("could not mark feed as fetched: %s", err)
+	}
+
+	feed, err := rss.FetchFeed(ctx, nextFeed.Url)
+	if err != nil {
+		return fmt.Errorf("could not fetch feed: %s", err)
+	}
+
+	if len(feed.Channel.Item) == 0 {
+		fmt.Println("no posts available in current feed")
+		return nil
+	}
+
+	for _, item := range feed.Channel.Item {
+		fmt.Println("*", item.Title)
+	}
 	return nil
+
+}
+
+func HandlerAgg(s *State, cmd Command) error {
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("error: wrong number of arguments provided")
+	}
+
+	timeBetweenReqs, err := time.ParseDuration(cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("could not parse time string: %s", err)
+	}
+
+	fmt.Println("collecting feeds every", cmd.Args[0])
+
+	ticker := time.NewTicker(timeBetweenReqs)
+	for ; ; <-ticker.C {
+		fmt.Println()
+		fmt.Println("available posts:")
+		scrapeFeeds(s)
+	}
 }
 
 func HandlerAddFeed(s *State, cmd Command, currentUser database.User) error {
@@ -113,7 +159,7 @@ func HandlerAddFeed(s *State, cmd Command, currentUser database.User) error {
 		UserID:    currentUser.ID,
 	})
 	if err != nil {
-		return fmt.Errorf("error: could not create feed")
+		return fmt.Errorf("could not create feed: %s", err)
 	}
 
 	fmt.Println("New feed created!")

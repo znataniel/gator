@@ -1,6 +1,6 @@
 -- name: CreateFeed :one
-INSERT INTO feeds (id, created_at, updated_at, name, url, user_id)
-VALUES($1, $2, $3, $4, $5, $6)
+INSERT INTO feeds (id, created_at, updated_at, last_fetched_at, name, url, user_id)
+VALUES($1, $2, $3, NULL, $4, $5, $6)
 RETURNING *;
 
 -- name: GetFeedsToPrint :many
@@ -18,7 +18,7 @@ UPDATE feeds
 SET last_fetched_at = $1, updated_at = $1
 WHERE id = $2;
 
--- name: GetNextFeedToFetch :many
+-- name: GetNextFeedToFetch :one
 SELECT * FROM feeds
 ORDER BY last_fetched_at ASC NULLS FIRST
 LIMIT 1;
